@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\SmNextOfKin;
 use app\models\SmNextOfKinSearch;
+use app\models\SmAdmittedStudent; // Add the model for smis.sm_admitted_student
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -36,15 +37,32 @@ class SmisController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($referenceNumber = null)
     {
+       // $studentModel = null;
+       // $nextOfKinModel = null;
+        $studentModel = new SmAdmittedStudent();
+        $nextOfKinModel = new SmNextOfKin();
         $searchModel = new SmNextOfKinSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
-
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
+        $dataProvider = $searchModel->search(\Yii::$app->request->queryParams);
+        
+        //$students = SmAdmittedStudent::find()->all();
+                // Pass the data to the view (if needed)
+        //return $this->render('index', ['students' => $students]);
+        if ($referenceNumber) {
+            // Fetch student details based on reference number from smis.sm_admitted_student 
+            $studentModel = SmAdmittedStudent::findOne(['adm_refno' => $referenceNumber]);
+            if ($studentModel) { 
+                // Fetch associated next of kin details from smis.sm_next_of_kin
+                $nextOfKinModel = SmNextOfKin::findOne(['adm_refno' => $referenceNumber]);
+            }
+          }
+          return $this->render('index', [
+              'studentModel' => $studentModel,
+              'nextOfKinModel' => $nextOfKinModel,
+              'searchModel' => $searchModel, // Ensure $searchModel is passed to the view
+              'dataProvider' => $dataProvider,
+          ]);
     }
 
     /**
@@ -131,4 +149,20 @@ class SmisController extends Controller
 
         throw new NotFoundHttpException('The requested page does not exist.');
     }
+    
+    // Add new actions to handle next of kin information
+     public function actionAddNextOfKin($studentId)
+     {
+         $nextOfKinModel = new SmNextOfKin();
+         // Set student ID for the next of kin record
+         $nextOfKinModel->student_id = $studentId;
+         if ($nextOfKinModel->load($this->request->post()) && $nextOfKinModel->save()) {
+             return $this->redirect(['index', 'referenceNumber' => $nextOfKinModel->student->reference_number]);
+         }
+         return $this->render('add-next-of-kin', [
+             'nextOfKinModel' => $nextOfKinModel,
+         ]);
+             
+     }
+    
 }
