@@ -39,8 +39,8 @@ class SmisController extends Controller
      */
     public function actionIndex($referenceNumber = null)
     {
-       // $studentModel = null;
-       // $nextOfKinModel = null;
+      //  $studentModel = null;
+      //  $nextOfKinModel = null;
         $studentModel = new SmAdmittedStudent();
         $nextOfKinModel = new SmNextOfKin();
         $searchModel = new SmNextOfKinSearch();
@@ -49,7 +49,7 @@ class SmisController extends Controller
         //$students = SmAdmittedStudent::find()->all();
                 // Pass the data to the view (if needed)
         //return $this->render('index', ['students' => $students]);
-        if ($referenceNumber) {
+        if ($referenceNumber !== '') {
             // Fetch student details based on reference number from smis.sm_admitted_student 
             $studentModel = SmAdmittedStudent::findOne(['adm_refno' => $referenceNumber]);
             if ($studentModel) { 
@@ -57,6 +57,14 @@ class SmisController extends Controller
                 $nextOfKinModel = SmNextOfKin::findOne(['adm_refno' => $referenceNumber]);
             }
           }
+          else {
+        // Handle the case where the reference number is empty or null
+        // Display specific messages for empty Admission Reference Number and Name fields
+        $studentModel = new SmAdmittedStudent();
+        $studentModel->adm_refno = "Admission reference number cannot be empty";
+        $studentModel->name = "No matching name found";
+         }
+          
           return $this->render('index', [
               'studentModel' => $studentModel,
               'nextOfKinModel' => $nextOfKinModel,

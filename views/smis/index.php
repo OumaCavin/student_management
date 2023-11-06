@@ -15,6 +15,23 @@ use yii\grid\GridView;
 
 $this->title = 'Student and Next Of Kin Details';
 $this->params['breadcrumbs'][] = $this->title;
+
+// Fetch the student model
+
+$studentModel = SmAdmittedStudent::getStudentByAdmRefNo($searchModel->adm_refno);
+$disableSearch = empty($searchModel->adm_refno) || !is_numeric($searchModel->adm_refno) ? 'disabled' : '';
+
+$this->registerJs("
+    $(document).ready(function() {
+        $('#adm_refno').on('input', function() {
+            if ($(this).val() === ''  || isNaN($(this).val())) {
+                $('#searchBtn').prop('disabled', true);
+            } else {
+                $('#searchBtn').prop('disabled', false);
+            }
+        });
+    });
+");
 ?>
 <div class="sm-next-of-kin-index">
 
@@ -28,10 +45,10 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= Html::beginForm(['index'], 'get', ['class' => 'form-inline']) ?>
     <div class="form-group">
         <?= Html::label('Search Admission Reference Number:', 'adm_refno') ?>
-        <?= Html::textInput('SmNextOfKinSearch[adm_refno]', isset($searchModel->adm_refno) ? $searchModel->adm_refno : null, ['class' => 'form-control']) ?>
+        <?= Html::textInput('SmNextOfKinSearch[adm_refno]', isset($searchModel->adm_refno) ? $searchModel->adm_refno : null, ['class' => 'form-control', 'id' => 'adm_refno']) ?>
     </div>
     <div class="form-group">
-        <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>
+        <?= Html::submitButton('Search', ['class' => 'btn btn-primary', 'id' => 'searchBtn', 'disabled' => $disableSearch]) ?>
     </div>
     <?= Html::endForm() ?>
 
@@ -64,20 +81,30 @@ $this->params['breadcrumbs'][] = $this->title;
             <p><strong>Admission Reference Number:</strong> <?= $studentModel->adm_refno ?></p>
             <p><strong>Name:</strong> <?= $studentModel->surname ?> <?= $studentModel->other_names ?></p>
             <!-- Display other student details here -->
+            
+                    <h3>Next of Kin Details</h3>
+        <?php
+        $nextOfKinDetails = $studentModel->getNextOfKinDetails()->all();
+        if (!empty($nextOfKinDetails)) : ?>
+            <?= GridView::widget([
+                'dataProvider' => new \yii\data\ArrayDataProvider(['allModels' => $nextOfKinDetails]),
+                'columns' => [
+                    'surname',
+                    'other_names',
+                    'relationship',
+                    // Include other columns as needed
+                ],
+            ]);
+        else : ?>
+            <p>No next of kin details found for this student.</p>
+            <!-- Include logic to add Next of Kin if needed -->
+        <?php endif; ?>
+            
         <?php else : ?>
             <p>No student found.</p>
         <?php endif; ?>
     </div>
-    <div class="next-of-kin-details">
-        <h2>Next of Kin Details</h2>
-        <?php if ($nextOfKinModel !== null) : ?>
-            <p><strong>Surname:</strong> <?= $nextOfKinModel->surname ?></p>
-            <p><strong>Relationship:</strong> <?= $nextOfKinModel->relationship ?></p>
-            <!-- Display other next of kin details here -->
-        <?php else : ?>
-            <p>No next of kin details found for this student.</p>
-            <?= Html::a('Add Next of Kin', ['add-next-of-kin', 'studentId' => $studentModel->adm_refno], ['class' => 'btn btn-primary']) ?>
-        <?php endif; ?>
-    </div>
+
 
 </div>
+

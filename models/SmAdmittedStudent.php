@@ -135,4 +135,33 @@ class SmAdmittedStudent extends \yii\db\ActiveRecord
             'study_centre_group_id' => 'Study Centre Group ID',
         ];
     }
+  //  public static function getStudentByAdmRefNo($admRefNo)
+  //  {
+  //      return self::find()->where(['adm_refno' => $admRefNo])->one();
+   // }
+    public static function getStudentByAdmRefNo($admRefNo)
+    {
+        
+        
+    if ($admRefNo !== '' && is_numeric($admRefNo) && ctype_digit($admRefNo)) {
+        return self::find()->where(['adm_refno' => $admRefNo])->one();
+    } else {
+        // Handle the case where an empty string is provided
+        // This could involve returning a default value or throwing an exception
+        // Example:
+       // $studentModel = new SmAdmittedStudent();
+       // $studentModel->adm_refno = "Wrong Input for Admission reference number field";
+       // $studentModel->name = "No matching name found";
+        //return $studentModel;
+       // throw new \InvalidArgumentException("Admission reference number cannot be empty.");
+    }
+    }
+    public function getNextOfKinDetails()
+    {
+        // Assuming there's a relation between SmAdmittedStudent and SmNextOfKin using 'adm_refno' field.
+        return $this->hasMany(SmNextOfKin::class, ['adm_refno' => 'adm_refno']);
+    }
+    
+    
+
 }
