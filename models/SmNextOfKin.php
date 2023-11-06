@@ -33,16 +33,16 @@ class SmNextOfKin extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['next_of_kin_id', 'adm_refno'], 'required'],
+            [['next_of_kin_id', 'adm_refno', 'surname', 'other_names', 'relationship', 'primary_phone_number', 'primary_email'], 'required'],
             [['next_of_kin_id', 'adm_refno'], 'default', 'value' => null],
             [['next_of_kin_id', 'adm_refno'], 'integer'],
-            [['surname'], 'string', 'max' => 20],
-            [['other_names'], 'string', 'max' => 150],
-            [['relationship', 'primary_phone_number', 'alternative_phone_number'], 'string', 'max' => 50],
+            [['surname', 'other_names', 'relationship'], 'string', 'max' => 150],
+            [['primary_phone_number', 'alternative_phone_number'], 'string', 'max' => 50],
             [['primary_email', 'alternative_email'], 'string', 'max' => 100],
             [['next_of_kin_id'], 'unique'],
             [['adm_refno'], 'exist', 'skipOnError' => true, 'targetClass' => SmAdmittedStudent::class, 'targetAttribute' => ['adm_refno' => 'adm_refno']],
-        ];
+            [['primary_email', 'alternative_email'], 'email'],
+            ];
     }
 
     /**
